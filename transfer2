@@ -1,0 +1,13 @@
+import os.path,time, shutil
+from datetime import  datetime,timedelta
+from time import gmtime, strftime
+path='C:/Users/Student/Desktop/Folder B/'
+destination= 'C:/Users/Student/Desktop/Folder A/'
+files=os.listdir(path)
+for file in files:
+    fileRange=time.time()    
+    fileTime=os.path.getmtime(path+file)    
+    if  fileTime-fileRange< 8640:
+        shutil.move(path+file,destination)
+        print (file)
+        
