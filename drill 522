@@ -1,0 +1,94 @@
+import sqlite3
+from tkinter import *
+from tkinter import ttk
+import os.path,time,shutil
+from time import gmtime,strftime
+
+class DataTransfer:
+
+    def __init__(self,master):
+        
+
+        path='C:/Users/Student/Desktop/Folder A/'
+        destination = 'C:/Users/Student/Desktop/Folder B/'
+        files = os.listdir(path)
+        dfiles= os.listdir(destination)
+        localtime = time.asctime(time.localtime(time.time()))
+        #see file 516
+        def review1():
+            if files:
+                print(files)
+
+        def review2():
+            if dfiles:
+                print(dfiles)
+
+        def transfer():
+            for file in files:
+                 fileRange=time.time()
+                 fileTime=os.path.getmtime(path+file)
+                 if fileTime-fileRange< 8640:
+                     shutil.move(path+file,destination)
+                     print(localtime)
+                     print(file)
+           #put time outside of for loop
+
+        conn = sqlite3.connect('drill66py.db')
+        c = conn.cursor()       
+   
+        
+        
+        def create_table():
+            c.execute('CREATE TABLE IF NOT EXISTS transfertime (localtime TEXT)');
+        create_table()
+        
+        
+        def data_entry():
+        #localTime = time.time()
+            localtime = time.asctime(time.localtime(time.time()))
+            print (localtime)
+            
+           
+            c.execute('INSERT INTO transfertime (localtime) VALUES(?)',(localtime,))
+            conn.commit()
+        data_entry()
+        
+        lastTransfer=StringVar()
+##        def get_time():
+##                c.execute('SELECT * FROM transfertime ORDER BY localtime DESC')
+##                lastTime = c.fetchone()
+##                print ('this is from db',lastTime)
+##                #return lastTime
+##                lastTransfer.set(lastTime)
+##        #get_time()   
+            
+        
+
+        ttk.Button(master, text = 'file B',command = review1).grid(row = 1, column = 1)
+        ttk.Button(master, text = 'file A',command = review2).grid(row = 2, column = 1)
+        ttk.Button(master, text = 'process',command = transfer).grid(row = 3, column = 1)
+        
+        #the value of the command property must name the fuction.
+
+        ttk.Label(master, text = 'Review changes and new files').grid(row = 1, column = 2) 
+        ttk.Label(master, text = 'Review files to Main Office').grid(row = 2, column = 2)
+        ttk.Label(master, text = 'Manual transfer data').grid(row = 3, column = 2)
+        ttk.Label(master, text= "Last transfer was on:").grid(row = 5, column = 1)
+
+        c.execute('SELECT * FROM transfertime ORDER BY localtime DESC')
+        lastTime = c.fetchone()
+        ttk.Label(master, text= lastTime).grid(row = 5, column = 2)
+        #ttk.Label(master, text= lastTransfer).grid(row = 5, column = 2)
+       #ttk.Entry(text= lastTransfer).grid(row = 5, column = 2)
+        
+                     
+def main():
+    root = Tk()
+    datatransfer = DataTransfer(root)
+    root.mainloop()
+    
+
+if __name__ == "__main__": main()
+
+
+
