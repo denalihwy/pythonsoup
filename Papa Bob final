@@ -1,0 +1,487 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace PapaBobs.Web
+{
+    public partial class success : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+
+        }
+    }
+}<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="success.aspx.cs" Inherits="PapaBobs.Web.success" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title></title>
+</head>
+<body>
+    <form id="form1" runat="server">
+    <div>
+    <h1>Success!</h1>
+    </div>
+    </form>
+</body>
+</html>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace PapaBobs.Web
+{
+    public partial class OrderManagement : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            refreshGridView();
+        }
+
+        protected void GridView1_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            int index = Convert.ToInt32(e.CommandArgument);
+            GridViewRow row = GridView1.Rows[index];
+            var value = row.Cells[1].Text.ToString();
+            var orderId = Guid.Parse(value);
+
+            Domain.OrderManager.CompleteOrder(orderId);
+
+            refreshGridView();
+        }
+
+        private void refreshGridView()
+        {
+            var orders = Domain.OrderManager.GetOrders();
+            GridView1.DataSource = orders;
+            GridView1.DataBind();
+        }
+
+
+
+
+
+
+    }using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace PapaBobs.Web
+{
+    public partial class Deault : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+
+        }
+
+       
+
+       protected void orderButton_Click(object sender, EventArgs e)
+        {
+            if (nameTextBox.Text.Trim().Length == 0)
+            {
+                validationLabel.Text = "Please enter a name.";
+                validationLabel.Visible = true;
+                return;
+            }
+
+            if (addressTextBox.Text.Trim().Length == 0)
+            {
+                validationLabel.Text = "Please enter an address.";
+                validationLabel.Visible = true; 
+                return;
+            }
+
+            if (zipTextBox.Text.Trim().Length == 0)
+            {
+                validationLabel.Text = "Please enter the zip code.";
+                validationLabel.Visible = true;
+                return;
+            }
+
+            if (phoneTextBox.Text.Trim().Length == 0)
+            {
+                validationLabel.Text = "Please enter a phone number.";
+                validationLabel.Visible = true;
+                return;
+            }
+            try
+            {
+                var order = buildOrder();
+                Domain.OrderManager.CreateOrder(order);
+                Response.Redirect("success.aspx");
+            }
+            catch (Exception ex)
+            {
+                validationLabel.Text = ex.Message;
+                validationLabel.Visible = true;
+                return;
+            }
+        }
+
+
+        private DTO.Enums.PaymentType determinePaymentType()
+        {
+            DTO.Enums.PaymentType paymentType;
+            if (cashRadioButton.Checked)
+            {
+                paymentType = DTO.Enums.PaymentType.Cash;
+            }
+            else  
+                {
+                paymentType = DTO.Enums.PaymentType.Credit;
+                }
+           
+            return paymentType;
+        }
+
+        
+
+        private DTO.Enums.CrustType determineCrust()
+        {
+            DTO.Enums.CrustType crust;
+            if (!Enum.TryParse(crustDropDownList.SelectedValue, out crust))
+            {
+                throw new Exception("Could not determine Pizza crust.");
+            }
+            return crust;
+        }
+
+        
+        private  DTO.Enums.SizeType determineSize()
+        {
+
+            DTO.Enums.SizeType size;
+            if (!Enum.TryParse(sizeDropDownList.SelectedValue, out size))
+            {
+                throw new Exception("Could not derermine Pizza size!");
+
+            }
+
+            return size;
+        }
+
+        protected void recalculateTotalCost(object sender, EventArgs e)
+        {
+            if (sizeDropDownList.SelectedValue == String.Empty) return;
+            if (crustDropDownList.SelectedValue == String.Empty) return;
+            var order = buildOrder();
+
+            try
+            {
+                TotalLabel.Text = Domain.PizzaPriceManager.CalculateCost(order).ToString("C");
+
+            }
+            catch 
+            {
+
+                //Swallow the error.
+            }
+
+            
+        }
+        
+        private DTO.OrderDTO buildOrder()
+        {
+
+            var order = new DTO.OrderDTO();
+            order.Size = determineSize();
+            order.Crust = determineCrust();
+            order.Sausage = sausageCheckBox.Checked;
+            order.Pepperoni = pepperoniCheckBox.Checked;
+            order.Onions = onionsCheckBox.Checked;
+            order.GreenPeppers = greenPeppersCheckBox.Checked;
+            order.Name = nameTextBox.Text;
+            order.Address = addressTextBox.Text;
+            order.Zip = zipTextBox.Text;
+            order.Phone = phoneTextBox.Text;
+            order.PaymentType = determinePaymentType();
+
+            return order;
+
+        }
+        
+    
+    
+    }
+}using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PapaBobs.Domain
+{
+    public class OrderManager
+    {
+        public static void CreateOrder(DTO.OrderDTO orderDTO)
+        {
+            if (orderDTO.Name.Trim().Length == 0)
+                throw new Exception("Name is required.");
+
+            if (orderDTO.Address.Trim().Length == 0)
+                throw new Exception("Address is required.");
+
+            if (orderDTO.Zip.Trim().Length == 0)
+                throw new Exception("Zip is required.");
+
+            if (orderDTO.Phone.Trim().Length == 0)
+                throw new Exception("Phone is required.");
+
+
+            orderDTO.OrderId = Guid.NewGuid();
+            orderDTO.TotalCost = PizzaPriceManager.CalculateCost(orderDTO);
+            Persistence.OrderRepository.CreateOrder(orderDTO);
+        }
+
+        public static object GetOrders()
+        {
+            return Persistence.OrderRepository.GetOrders();
+        }
+
+        public static void CompleteOrder(Guid orderId)
+        {
+            Persistence.OrderRepository.CompleteOrder(orderId);
+        }
+
+        }
+
+
+        using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using PapaBobs.DTO;
+
+namespace PapaBobs.Domain
+{
+   public class PizzaPriceManager
+    {
+        public static decimal CalculateCost(DTO.OrderDTO order)
+        {
+            decimal cost = 0.0M;
+            var prices = getPizzaPrices();
+            cost += calculateSizeCost(order, prices);
+            cost += calculateCrustCost(order, prices);
+            cost += calculateToppings(order, prices);
+            
+            return cost;
+        }
+
+        private static decimal calculateToppings(OrderDTO order, DTO.PizzaPriceDTO prices)
+        {
+            decimal cost = 0.0M;
+
+            cost += (order. Sausage) ? prices.SausageCost : 0M;
+            cost += (order.Pepperoni) ? prices.PepperoniCost : 0M;
+            cost += (order.Onions) ? prices.OnionsCost : 0M;
+            cost += (order.GreenPeppers) ? prices.GreenPeppersCost : 0M;
+            return cost;
+
+        }   
+
+        private static decimal calculateCrustCost(OrderDTO order, DTO.PizzaPriceDTO prices)
+        {
+            decimal cost = 0.0M;
+
+            switch (order.Crust)
+            {
+                case DTO.Enums.CrustType.Regular:
+                    cost = prices.RegularCrustCost;
+                    break;
+                case DTO.Enums.CrustType.Thin:
+                    cost = prices.ThinCrustCost;
+                    break;
+                case DTO.Enums.CrustType.Thick:
+                    cost = prices.ThickCrustCost;
+                    break;
+                default:
+                    break;
+            }
+            return cost;
+        }
+
+
+        private static decimal calculateSizeCost(DTO.OrderDTO order, DTO.PizzaPriceDTO prices)
+        {
+            decimal cost = 0.0M;
+
+            switch (order.Size)
+            {
+                case PapaBobs.DTO.Enums.SizeType.Small:
+                    cost = prices.SmallSizeCost;
+                    break;
+                case PapaBobs.DTO.Enums.SizeType.Medium:
+                    cost = prices.MediumSizeCost;
+                    break;
+                case PapaBobs.DTO.Enums.SizeType.Large:
+                    cost = prices.LargeSizeCost;
+                    break;
+                default:
+                    break;
+                                              
+             }
+
+
+            return cost;
+        }
+
+        private static DTO.PizzaPriceDTO getPizzaPrices()
+        {
+           var prices =  Persistence.PizzaPriceRepository.GetPizzaPrices();
+            return prices;
+        }
+    }
+}using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PapaBobs.Persistence
+{
+  public class PizzaPriceRepository
+    {
+        public static DTO.PizzaPriceDTO GetPizzaPrices()
+        {
+            var db = new PapaBobsDbEntities();
+            var prices = db.PizzaPrices.First();
+            var dto = convertToDTO(prices);
+            return dto;
+        }
+    private static DTO.PizzaPriceDTO convertToDTO(PizzaPrice pizzaPrice)
+        {
+            var dto = new DTO.PizzaPriceDTO();
+
+            dto.SmallSizeCost = pizzaPrice.SmallSizeCost;
+            dto.MediumSizeCost = pizzaPrice.MediumSizeCost;
+            dto.LargeSizeCost = pizzaPrice.LargeSizeCost;
+            dto.ThickCrustCost = pizzaPrice.ThickCrustCost;
+            dto.ThinCrustCost = pizzaPrice.ThinCrustCost;
+            dto.RegularCrustCost = pizzaPrice.RegularCrustCost;
+            dto.SausageCost = pizzaPrice.SausageCost;
+            dto.PepperoniCost = pizzaPrice.PepperoniCost;
+            dto.OnionsCost = pizzaPrice.OnionsCost;
+            dto.GreenPeppersCost = pizzaPrice.GreenPeppersCost;
+
+            return dto;
+        }
+    }using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.Entity;
+
+namespace PapaBobs.Persistence
+{
+    public class OrderRepository
+    {
+        public static void CreateOrder(DTO.OrderDTO orderDTO)
+        {
+            var db = new PapaBobsDbEntities();
+
+            var order = convertToEntity(orderDTO);
+            db.Orders.Add(order);
+            db.SaveChanges();
+
+            
+        }
+        private static Order convertToEntity(DTO.OrderDTO orderDTO)
+        {
+            var order = new Order();
+
+            order.OrderId = orderDTO.OrderId;
+            order.Size = orderDTO.Size;
+            order.Crust = orderDTO.Crust;
+            order.Sausage = orderDTO.Sausage;
+            order.Pepperoni = orderDTO.Pepperoni;
+            order.Onions = orderDTO.Onions;
+            order.GreenPeppers = orderDTO.GreenPeppers;
+            order.Name = orderDTO.Name;
+            order.Address = orderDTO.Address;
+            order.Phone = orderDTO.Phone;
+            order.Zip = orderDTO.Zip;
+            order.TotalCost = orderDTO.TotalCost;
+            order.PaymentType = orderDTO.PaymentType;
+            order.Completed = orderDTO.Completed;
+
+
+            return order;
+        }
+
+       
+        
+
+        public static List<DTO.OrderDTO> GetOrders()
+        {
+            var db = new PapaBobsDbEntities();
+            var orders = db.Orders.Where(p => p.Completed == false).ToList();
+            var ordersDTO = convertToDTO(orders);
+            return ordersDTO;
+        }
+
+        private static List<DTO.OrderDTO> convertToDTO(List<Order> orders)
+        {
+            var ordersDTO = new List<DTO.OrderDTO>();
+
+            foreach (var order in orders)
+            {
+                var orderDTO = new DTO.OrderDTO();
+                orderDTO.OrderId = order.OrderId;
+                orderDTO.Crust = order.Crust;
+                orderDTO.Size = order.Size;
+                orderDTO.Name = order.Name;
+                orderDTO.Address = order.Address;
+                orderDTO.Zip = order.Zip;
+                orderDTO.Phone = order.Phone;
+                orderDTO.Sausage = order.Sausage;
+                orderDTO.Pepperoni = order.Pepperoni;
+                orderDTO.Onions = order.Onions;
+                orderDTO.GreenPeppers = order.GreenPeppers;
+                orderDTO.PaymentType = order.PaymentType;
+                orderDTO.Completed = order.Completed;
+                orderDTO.TotalCost = order.TotalCost;
+
+                ordersDTO.Add(orderDTO);
+               
+            }
+            return ordersDTO;
+        }
+
+        public static void CompleteOrder(Guid orderId)
+        {
+            var db = new PapaBobsDbEntities();
+            var order = db.Orders.FirstOrDefault(p => p.OrderId == orderId);
+            order.Completed = true;
+            db.SaveChanges();
+        }
+      
+        
+
+
+
+        
+    }
+}
+
+}
+
+
+    }
+
+
+
+}
