@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Date time", "Date time\Date time.csproj", "{7B151C0F-38A5-41B2-923F-816C7B1CCC94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CS-ASP_016", "..\..\..\..\Desktop\CS-ASP_016\Before\CS-ASP_016\CS-ASP_016\CS-ASP_016.csproj", "{18F3827B-AE30-44E2-86CF-89C65DE0B586}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7B151C0F-38A5-41B2-923F-816C7B1CCC94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B151C0F-38A5-41B2-923F-816C7B1CCC94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B151C0F-38A5-41B2-923F-816C7B1CCC94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B151C0F-38A5-41B2-923F-816C7B1CCC94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18F3827B-AE30-44E2-86CF-89C65DE0B586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18F3827B-AE30-44E2-86CF-89C65DE0B586}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18F3827B-AE30-44E2-86CF-89C65DE0B586}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18F3827B-AE30-44E2-86CF-89C65DE0B586}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
